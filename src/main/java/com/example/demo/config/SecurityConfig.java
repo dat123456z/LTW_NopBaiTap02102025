@@ -4,6 +4,7 @@ import com.example.demo.security.AppUserDetailsService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.*;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -38,9 +39,22 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-            		.requestMatchers("/login", "/do-login", "/logout", "/error", "/register",
-                            "/css/**", "/js/**", "/img/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")       // yêu cầu ROLE_ADMIN
+                // public pages
+                .requestMatchers("/login", "/do-login", "/logout", "/error").permitAll()
+
+                // ✅ permit rõ ràng GET + POST cho /register
+                .requestMatchers(HttpMethod.GET,  "/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/register").permitAll()
+
+                // (Nếu sau này bạn bọc class bằng @RequestMapping("/auth"), thêm luôn 2 dòng này)
+                .requestMatchers(HttpMethod.GET,  "/auth/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+
+                // static
+                .requestMatchers("/css/**", "/js/**", "/img/**", "/assets/**").permitAll()
+
+                // protected
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/user/**").hasAnyRole("USER","ADMIN")
                 .anyRequest().authenticated()
             )
@@ -53,14 +67,8 @@ public class SecurityConfig {
                 .failureUrl("/login?error=true")
                 .permitAll()
             )
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout=true")
-                .permitAll()
-            )
-            // nếu truy cập trái quyền thì đưa về 403 (hoặc login nếu bạn muốn)
+            .logout(l -> l.logoutUrl("/logout").logoutSuccessUrl("/login?logout=true").permitAll())
             .exceptionHandling(e -> e.accessDeniedPage("/error-403"))
-            // dùng provider bên dưới (quan trọng để chắc auth lấy từ userDetailsService + encoder)
             .authenticationProvider(daoAuthenticationProvider());
 
         return http.build();
