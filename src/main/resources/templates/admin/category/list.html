@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách Category</title>
+</head>
+<body>
+<h2>Danh sách danh mục</h2>
+
+<!-- Nút thêm -->
+<a th:href="@{/admin/categories/create}">➕ Thêm Category</a>
+
+<!-- Ví dụ danh sách -->
+<table border="1" cellpadding="5" cellspacing="0">
+    <tr><th>ID</th><th>Tên</th><th>Mô tả</th></tr>
+    <tr th:each="c : ${items}">
+        <td th:text="${c.id}"></td>
+        <td th:text="${c.name}"></td>
+        <td th:text="${c.description}"></td>
+    </tr>
+</table>
+</body>
+</html>
